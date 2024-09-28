@@ -4,54 +4,30 @@ LOG_FILE_OPEN
 
 =====================================
 ALLOCATION
-Memory:       0x000002c10b751430
-Number:       32
+Memory:       0x000001D3EDA8DD30
+Number:       24
 Element size: 1
 =====================================
 
 =====================================
 REALLOCATION
-Old memory:   0x000002c10b751430
+Old memory:   0x000001D3EDA8DD30
+Old size:     24
+New memory:   0x000001D3EDA8D880
+New size:     32
+=====================================
+
+=====================================
+REALLOCATION
+Old memory:   0x000001D3EDA8D880
 Old size:     32
-New memory:   0x000002c10b756d60
+New memory:   0x000001D3EDA86E90
 New size:     48
 =====================================
 
 =====================================
-REALLOCATION
-Old memory:   0x000002c10b756d60
-Old size:     48
-New memory:   0x000002c10b756d60
-New size:     80
-=====================================
-
-=====================================
-REALLOCATION
-Old memory:   0x000002c10b756d60
-Old size:     80
-New memory:   0x000002c10b756d60
-New size:     144
-=====================================
-
-=====================================
-REALLOCATION
-Old memory:   0x000002c10b756d60
-Old size:     144
-New memory:   0x000002c10b756d60
-New size:     272
-=====================================
-
-=====================================
-REALLOCATION
-Old memory:   0x000002c10b756d60
-Old size:     272
-New memory:   0x000002c10b756d60
-New size:     528
-=====================================
-
-=====================================
 FREE
-Memory:       0x000002c10b756d60
+Memory:       0x000001D3EDA86E90
 =====================================
 
 =====================================

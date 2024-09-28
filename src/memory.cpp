@@ -25,9 +25,9 @@ static const char *LOG_FILE_NAME = "memory.log";
 
 #endif
 
-void *_recalloc(void * memory_cell,
-                size_t old_size,
-                size_t new_size,
+void *_recalloc(void * memory_cell ,
+                size_t old_size    ,
+                size_t new_size    ,
                 size_t element_size) {
     void *new_memory_cell = realloc(memory_cell,
                                     new_size * element_size);
@@ -43,7 +43,7 @@ void *_recalloc(void * memory_cell,
     return new_memory_cell;
 }
 
-void *_calloc(size_t number,
+void *_calloc(size_t number      ,
               size_t element_size) {
     void *memory_cell = calloc(number, element_size);
     MEMORY_LOG(MEMORY_ALLOCATION, memory_cell, number, element_size);

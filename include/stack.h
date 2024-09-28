@@ -1,41 +1,58 @@
 #ifndef STACK_H
 #define STACK_H
 
+#define CANARY_PROTECTION
+#define HASH_PROTECTION
+#define WRITE_DUMP
+
 #include <stdio.h>
 
-#ifndef NDEBUG
-#define ON_DEBUG(...) __VA_ARGS__
-#define DEBUG_INIT(__var_name, __print_function, __dump_file_name) ,__FILE__        ,\
-                                                                    __LINE__        ,\
-                                                                    #__var_name     ,\
-                                                                    __FUNCTION__    ,\
-                                                                    __print_function,\
-                                                                    __dump_file_name
-
+#ifdef CANARY_PROTECTION
+#define STACK_CANARY_ON(...) __VA_ARGS__
 #else
-#define ON_DEBUG(...)
-#define DEBUG_INIT(__var_name, __print_function, __dump_file_name)
+#define STACK_CANARY_ON(...)
+#endif
+
+#ifdef HASH_PROTECTION
+#define STACK_HASH_ON(...) __VA_ARGS__
+#else
+#define STACK_HASH_ON(...)
+#endif
+
+#ifdef WRITE_DUMP
+#define DUMP_INIT(__var_name, __print_function, __dump_file_name) ,__FILE__        ,\
+                                                                   __LINE__        ,\
+                                                                   #__var_name     ,\
+                                                                   __FUNCTION__    ,\
+                                                                   __print_function,\
+                                                                   __dump_file_name
+
+#define STACK_WRITE_DUMP_ON(...) __VA_ARGS__
+#else
+#define DUMP_INIT(__var_name, __print_function, __dump_file_name)
+#define STACK_WRITE_DUMP_ON(...)
 #endif
 
 struct stack_t {
-    ON_DEBUG(size_t      structure_hash        );
-    ON_DEBUG(size_t      data_hash             );
-    ON_DEBUG(size_t      canary_left           );
-    ON_DEBUG(size_t *    data_canary_left      );
-    ON_DEBUG(size_t *    data_canary_right     );
-    ON_DEBUG(const char *initialized_file      );
-    ON_DEBUG(const char *variable_name         );
-    ON_DEBUG(size_t      line                  );
-    ON_DEBUG(const char *initialized_func      );
-    ON_DEBUG(const char *dump_file_name        );
-    ON_DEBUG(FILE *      dump_file             );
-    ON_DEBUG(int       (*print)(FILE *, void *));
-             void *      data                   ;
-             size_t      size                   ;
-             size_t      element_size           ;
-             size_t      capacity               ;
-             size_t      init_capacity          ;
-    ON_DEBUG(size_t      canary_right          );
+        STACK_CANARY_ON(size_t      canary_left           );
+          STACK_HASH_ON(size_t      structure_hash        );
+          STACK_HASH_ON(size_t      data_hash             );
+        STACK_CANARY_ON(size_t *    data_canary_left      );
+        STACK_CANARY_ON(size_t *    data_canary_right     );
+        STACK_CANARY_ON(size_t      actual_data_size      );
+    STACK_WRITE_DUMP_ON(const char *initialized_file      );
+    STACK_WRITE_DUMP_ON(const char *variable_name         );
+    STACK_WRITE_DUMP_ON(size_t      line                  );
+    STACK_WRITE_DUMP_ON(const char *initialized_func      );
+    STACK_WRITE_DUMP_ON(const char *dump_file_name        );
+    STACK_WRITE_DUMP_ON(FILE *      dump_file             );
+    STACK_WRITE_DUMP_ON(int       (*print)(FILE *, void *));
+                        void *      data                   ;
+                        size_t      size                   ;
+                        size_t      element_size           ;
+                        size_t      capacity               ;
+                        size_t      init_capacity          ;
+        STACK_CANARY_ON(size_t      canary_right          );
 };
 
 enum stack_error_t {
@@ -52,20 +69,20 @@ enum stack_error_t {
     STACK_INVALID_CAPACITY = 10,
 };
 
-stack_error_t stack_init(stack_t *   stack,
-                         size_t      init_capacity,
+stack_error_t stack_init(stack_t *   stack                ,
+                         size_t      init_capacity        ,
                          size_t      element_size
-               ON_DEBUG(,const char *initialized_file     )
-               ON_DEBUG(,size_t      line                 )
-               ON_DEBUG(,const char *variable_name        )
-               ON_DEBUG(,const char *function_name        )
-               ON_DEBUG(,int       (*print)(FILE *,void *))
-               ON_DEBUG(,const char *dump_file_name       ));
+    STACK_WRITE_DUMP_ON(,const char *initialized_file     )
+    STACK_WRITE_DUMP_ON(,size_t      line                 )
+    STACK_WRITE_DUMP_ON(,const char *variable_name        )
+    STACK_WRITE_DUMP_ON(,const char *function_name        )
+    STACK_WRITE_DUMP_ON(,int       (*print)(FILE *,void *))
+    STACK_WRITE_DUMP_ON(,const char *dump_file_name       ));
 
 stack_error_t stack_push(stack_t *stack,
-                         void *   elem);
+                         void *   elem );
 
-stack_error_t stack_pop (stack_t *stack,
+stack_error_t stack_pop (stack_t *stack ,
                          void *   output);
 
 stack_error_t stack_destroy(stack_t *stack);
