@@ -29,7 +29,7 @@ void *_recalloc(void * memory_cell ,
                 size_t old_size    ,
                 size_t new_size    ,
                 size_t element_size) {
-    void *new_memory_cell = realloc(memory_cell,
+    void *new_memory_cell = realloc(memory_cell            ,
                                     new_size * element_size);
     MEMORY_LOG(MEMORY_REALLOCATION, memory_cell, old_size, new_memory_cell, new_size);
     if(new_memory_cell == NULL)
