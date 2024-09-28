@@ -1,0 +1,3 @@
+TODO close structure fields
+
+TODO reallocation of memory with pointer to stack structure {canary1}{stack_t}{data}

@@ -1,5 +1,13 @@
 {
     "cSpell.words": [
         "recalloc"
-    ]
+    ],
+    "files.associations": {
+        "format": "cpp",
+        "array": "cpp",
+        "string": "cpp",
+        "string_view": "cpp",
+        "span": "cpp",
+        "vector": "cpp"
+    }
 }
