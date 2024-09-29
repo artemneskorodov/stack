@@ -1,11 +1,11 @@
 #ifndef STACK_H
 #define STACK_H
 
+#include <stdio.h>
+
 #define CANARY_PROTECTION
 #define HASH_PROTECTION
 #define WRITE_DUMP
-
-#include <stdio.h>
 
 #ifdef CANARY_PROTECTION
 #define STACK_CANARY_ON(...) __VA_ARGS__
@@ -78,13 +78,10 @@ stack_error_t stack_init(stack_t *   stack                ,
     STACK_WRITE_DUMP_ON(,const char *function_name        )
     STACK_WRITE_DUMP_ON(,int       (*print)(FILE *,void *))
     STACK_WRITE_DUMP_ON(,const char *dump_file_name       ));
-
 stack_error_t stack_push(stack_t *stack,
                          void *   elem );
-
 stack_error_t stack_pop (stack_t *stack ,
                          void *   output);
-
 stack_error_t stack_destroy(stack_t *stack);
 
 #endif

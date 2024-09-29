@@ -29,7 +29,7 @@ int main(void) {
             return EXIT_FAILURE;
         }
     }
-
+    *((char *)st.data) = 1;
     for(size_t i = 0; i < strlen(data); i++) {
         char c = 0;
         if(err = stack_pop(&st, &c)) {
