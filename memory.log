@@ -4,33 +4,88 @@ LOG_FILE_OPEN
 
 =====================================
 ALLOCATION
-Memory:       0x000001991D57DE70
-Number:       24
+Memory:       0x0000020dde261430
+Number:       1
 Element size: 1
 =====================================
 
 =====================================
 REALLOCATION
-Old memory:   0x000001991D57DE70
-Old size:     24
-New memory:   0x000001991D57DAF0
+Old memory:   0x0000020dde261430
+Old size:     1
+New memory:   0x0000020dde261430
+New size:     2
+=====================================
+
+=====================================
+REALLOCATION
+Old memory:   0x0000020dde261430
+Old size:     2
+New memory:   0x0000020dde261430
+New size:     4
+=====================================
+
+=====================================
+REALLOCATION
+Old memory:   0x0000020dde261430
+Old size:     4
+New memory:   0x0000020dde261430
+New size:     8
+=====================================
+
+=====================================
+REALLOCATION
+Old memory:   0x0000020dde261430
+Old size:     8
+New memory:   0x0000020dde261430
+New size:     16
+=====================================
+
+=====================================
+REALLOCATION
+Old memory:   0x0000020dde261430
+Old size:     16
+New memory:   0x0000020dde266d60
 New size:     32
 =====================================
 
 =====================================
 REALLOCATION
-Old memory:   0x000001991D57DAF0
+Old memory:   0x0000020dde266d60
 Old size:     32
-New memory:   0x000001991D576480
-New size:     48
+New memory:   0x0000020dde266d60
+New size:     16
 =====================================
 
 =====================================
-FREE
-Memory:       0x000001991D576480
+REALLOCATION
+Old memory:   0x0000020dde266d60
+Old size:     16
+New memory:   0x0000020dde266d60
+New size:     8
 =====================================
 
 =====================================
-LOG_FILE_CLOSE
+REALLOCATION
+Old memory:   0x0000020dde266d60
+Old size:     8
+New memory:   0x0000020dde266d60
+New size:     4
+=====================================
+
+=====================================
+REALLOCATION
+Old memory:   0x0000020dde266d60
+Old size:     4
+New memory:   0x0000020dde266d60
+New size:     2
+=====================================
+
+=====================================
+REALLOCATION
+Old memory:   0x0000020dde266d60
+Old size:     2
+New memory:   0x0000020dde266d60
+New size:     1
 =====================================
 

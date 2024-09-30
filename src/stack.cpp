@@ -20,15 +20,15 @@
             STACK_RETURN_ERROR(__stack_pointer, __canary_state);            \
     }
 
-    static stack_error_t stack_update_canary(stack_t *stack);
-    static stack_error_t align_size(stack_t *stack);
-    static stack_error_t canary_verify(stack_t *stack);
-    static stack_error_t data_allocate_canary(stack_t *stack);
+    static stack_error_t stack_update_canary   (stack_t *stack);
+    static stack_error_t align_size            (stack_t *stack);
+    static stack_error_t canary_verify         (stack_t *stack);
+    static stack_error_t data_allocate_canary  (stack_t *stack);
     static stack_error_t data_reallocate_canary(stack_t *stack);
 #else //STACK CANARY PROTECTION
     #define STACK_UPDATE_CANARY(__stack_pointer)
-    static stack_error_t data_allocate_no_canary(stack_t *stack);
-    static stack_error_t data_reallocate_no_canary(stack_t *stack       ,
+    static stack_error_t data_allocate_no_canary  (stack_t *stack);
+    static stack_error_t data_reallocate_no_canary(stack_t *stack,
                                                    size_t   new_capacity);
 #endif//STACK CANARY PROTECTION
 
@@ -43,11 +43,11 @@
     }
 
     static stack_error_t stack_update_hash(stack_t *stack);
-    static size_t hash_function(void *start, void *end);
-    static stack_error_t stack_count_hash(stack_t *stack         ,
-                                          size_t * data_hash     ,
-                                          size_t * structure_hash);
-    static stack_error_t hash_verify(stack_t *stack);
+    static size_t        hash_function    (void *start, void *end);
+    static stack_error_t stack_count_hash (stack_t *stack,
+                                           size_t * data_hash,
+                                           size_t * structure_hash);
+    static stack_error_t hash_verify      (stack_t *stack);
 #else //STACK HASH PROTECTION
     #define STACK_UPDATE_HASH(__stack_pointer)
 #endif//STACK HASH PROTECTION
@@ -70,19 +70,19 @@
 
     static const char *DEFAULT_DUMP_FILE_NAME = "stack.log";
 
-    static stack_error_t stack_dump(stack_t *     stack   ,
-                                    const char *  filename,
-                                    size_t        line    ,
-                                    const char *  function,
-                                    stack_error_t error   );
-    static const char *get_error_text(stack_error_t error);
-    static stack_error_t stack_init_dump(stack_t *   stack                 ,
-                                         int       (*print)(FILE *, void *),
-                                         size_t      line                  ,
-                                         const char *dump_file_name        ,
-                                         const char *initialized_file      ,
-                                         const char *variable_name         ,
-                                         const char *function_name         );
+    static stack_error_t stack_dump         (stack_t *     stack,
+                                             const char *  filename,
+                                             size_t        line,
+                                             const char *  function,
+                                             stack_error_t error);
+    static const char *get_error_text       (stack_error_t error);
+    static stack_error_t stack_init_dump    (stack_t *   stack,
+                                             int       (*print)(FILE *, void *),
+                                             size_t      line,
+                                             const char *dump_file_name,
+                                             const char *initialized_file,
+                                             const char *variable_name,
+                                             const char *function_name);
     static stack_error_t stack_write_members(stack_t *stack);
 #endif//WRITE DUMP MODE
 
@@ -122,27 +122,26 @@ enum stack_operation_t {
 //=============================================================================================================
 //FUNCTION PROTOTYPES
 //=============================================================================================================
-static stack_error_t stack_check_size(stack_t *         stack    ,
-                                      stack_operation_t operation);
-static stack_error_t stack_verify(stack_t *stack);
-static stack_error_t stack_free_data(stack_t *stack);
-static stack_error_t allocate_data(stack_t *stack);
-static stack_error_t reallocate_data(stack_t *stack       ,
-                                     size_t   new_capacity);
+static stack_error_t stack_check_size      (stack_t *         stack,
+                                            stack_operation_t operation);
+static stack_error_t stack_verify          (stack_t *stack);
+static stack_error_t stack_free_data       (stack_t *stack);
+static stack_error_t allocate_data         (stack_t *stack);
+static stack_error_t reallocate_data       (stack_t *stack,
+                                            size_t   new_capacity);
 
 //=============================================================================================================
 //FUNCTION DEFINITIONS
 //=============================================================================================================
-stack_error_t stack_init(stack_t *   stack,
+stack_error_t stack_init(STACK_WRITE_DUMP_ON(const char *initialized_file,
+                                             size_t      line,
+                                             const char *variable_name,
+                                             const char *function_name,
+                                             int       (*print)(FILE *,void *),
+                                             const char *dump_file_name,)
+                         stack_t *   stack,
                          size_t      init_capacity,
-                         size_t      element_size
-
-    STACK_WRITE_DUMP_ON(,const char *initialized_file      )
-    STACK_WRITE_DUMP_ON(,size_t      line                  )
-    STACK_WRITE_DUMP_ON(,const char *variable_name         )
-    STACK_WRITE_DUMP_ON(,const char *function_name         )
-    STACK_WRITE_DUMP_ON(,int       (*print)(FILE *, void *))
-    STACK_WRITE_DUMP_ON(,const char *dump_file_name        )) {
+                         size_t      element_size) {
     if(stack == NULL)
         return STACK_NULL;
 
@@ -159,13 +158,13 @@ stack_error_t stack_init(stack_t *   stack,
         STACK_RETURN_ERROR(stack, allocation_state);
 
     #ifdef WRITE_DUMP
-        stack_error_t dump_init_state = stack_init_dump(stack           ,
-                                                        print           ,
-                                                        line            ,
-                                                        dump_file_name  ,
+        stack_error_t dump_init_state = stack_init_dump(stack,
+                                                        print,
+                                                        line,
+                                                        dump_file_name,
                                                         initialized_file,
-                                                        variable_name   ,
-                                                        function_name   );
+                                                        variable_name,
+                                                        function_name);
         if(dump_init_state != STACK_SUCCESS)
             STACK_RETURN_ERROR(stack, dump_init_state);
     #endif//WRITE_DUMP
@@ -183,8 +182,8 @@ stack_error_t stack_push(stack_t *stack,
     STACK_CAPACITY(stack, OPERATION_PUSH);
 
     void *element = (char *)stack->data + stack->size * stack->element_size;
-    if(memcpy(element            ,
-              elem               ,
+    if(memcpy(element,
+              elem,
               stack->element_size) != element)
         STACK_RETURN_ERROR(stack, STACK_MEMORY_ERROR);
 
@@ -207,13 +206,13 @@ stack_error_t stack_pop(stack_t *stack,
 
     stack->size--;
     void *element = (char *)stack->data + stack->size * stack->element_size;
-    if(memcpy(output             ,
-              element            ,
+    if(memcpy(output,
+              element,
               stack->element_size) != output)
         STACK_RETURN_ERROR(stack, STACK_MEMORY_ERROR);
 
-    if(memset(element            ,
-              0                  ,
+    if(memset(element,
+              0,
               stack->element_size) != element)
         STACK_RETURN_ERROR(stack, STACK_MEMORY_ERROR);
 
@@ -326,42 +325,42 @@ stack_error_t reallocate_data(stack_t *stack, size_t new_capacity) {
 //WRITE DUMP MODE FUNCTIONS DEFINITIONS
 //=============================================================================================================
 #ifdef WRITE_DUMP
-    stack_error_t stack_dump(stack_t *     stack   ,
+    stack_error_t stack_dump(stack_t *     stack,
                              const char *  filename,
-                             size_t        line    ,
+                             size_t        line,
                              const char *  function,
-                             stack_error_t error   ) {
+                             stack_error_t error) {
         if(stack->dump_file == NULL) {
             printf("DUMP FILE ERROR\r\n"
                    "called from: %s:%llu\r\n",
-                   filename                  ,
-                   line                      );
+                   filename,
+                   line);
             return STACK_DUMP_ERROR;
         }
 
         if(fprintf(stack->dump_file,
                    "stack_t[0x%p] initialized in %s:%llu as 'stack_t %s'\r\n"
                    "dump called from %s:%llu (%s)\r\n"
-                   "ERROR_CODE = 0x%x"    ,
-                   stack                  ,
+                   "ERROR_CODE = 0x%x",
+                   stack,
                    stack->initialized_file,
-                   stack->line            ,
-                   stack->variable_name   ,
-                   filename               ,
-                   line                   ,
-                   function               ,
-                   error                  ) < 0)
+                   stack->line,
+                   stack->variable_name,
+                   filename,
+                   line,
+                   function,
+                   error) < 0)
             return STACK_DUMP_ERROR;
 
         const char *error_definition = get_error_text(error);
         if(error_definition == NULL) {
-            if(fprintf(stack->dump_file     ,
+            if(fprintf(stack->dump_file,
                        "(unknown error)\r\n") < 0)
                 return STACK_DUMP_ERROR;
         }
         else{
             if(fprintf(stack->dump_file,
-                       "(%s)\r\n"      ,
+                       "(%s)\r\n",
                        error_definition) < 0)
                 return STACK_DUMP_ERROR;
         }
@@ -377,10 +376,10 @@ stack_error_t reallocate_data(stack_t *stack, size_t new_capacity) {
                        "\tdata_canary_left  = 0x%llx;\r\n"
                        "\tdata_canary_right = 0x%llx;\r\n"
                        "\tcanary_right      = 0x%llx;\r\n",
-                       stack->canary_left                 ,
-                       *stack->data_canary_left           ,
-                       *stack->data_canary_right          ,
-                       stack->canary_right                ) < 0)
+                       stack->canary_left,
+                       *stack->data_canary_left,
+                       *stack->data_canary_right,
+                       stack->canary_right) < 0)
                 return STACK_DUMP_ERROR;
         #endif
 
@@ -389,8 +388,8 @@ stack_error_t reallocate_data(stack_t *stack, size_t new_capacity) {
                        "\t\t---HASHES---\r\n"
                        "\tstructure_hash    = 0x%llx;\r\n"
                        "\tdata_hash         = 0x%llx;\r\n",
-                       stack->structure_hash              ,
-                       stack->data_hash                   ) < 0)
+                       stack->structure_hash,
+                       stack->data_hash) < 0)
                 return STACK_DUMP_ERROR;
         #endif
 
@@ -401,10 +400,10 @@ stack_error_t reallocate_data(stack_t *stack, size_t new_capacity) {
                    "\telement_size      =   %llu;\r\n"
                    "\t\t---MEMBERS---\r\n"
                    "\tdata[0x%p]:\r\n",
-                   stack->size        ,
-                   stack->capacity    ,
+                   stack->size,
+                   stack->capacity,
                    stack->element_size,
-                   stack->data        ) < 0)
+                   stack->data) < 0)
             return STACK_DUMP_ERROR;
 
         stack_error_t members_writing_state = stack_write_members(stack);
@@ -434,24 +433,24 @@ stack_error_t reallocate_data(stack_t *stack, size_t new_capacity) {
         }
 
         for(size_t element = 0; element < stack->size; element++) {
-            if(fprintf(stack->dump_file ,
+            if(fprintf(stack->dump_file,
                        "\t   *[%llu] = ",
-                       element          ) < 0)
+                       element) < 0)
                 return STACK_DUMP_ERROR;
 
-            if(stack->print(stack->dump_file                                   ,
+            if(stack->print(stack->dump_file,
                             (char *)stack->data + element * stack->element_size) < 0)
                 return STACK_DUMP_ERROR;
 
             if(fprintf(stack->dump_file,
-                       ";\r\n"         ) < 0)
+                       ";\r\n") < 0)
                 return STACK_DUMP_ERROR;
         }
 
         for(size_t element = stack->size; element < stack->capacity; element++) {
-            if(fprintf(stack->dump_file               ,
+            if(fprintf(stack->dump_file,
                        "\t\t[%llu] = --- (POISON)\r\n",
-                       element                        ) < 0)
+                       element) < 0)
                 return STACK_DUMP_ERROR;
         }
         return STACK_SUCCESS;
@@ -498,13 +497,13 @@ stack_error_t reallocate_data(stack_t *stack, size_t new_capacity) {
         }
     }
 
-    stack_error_t stack_init_dump(stack_t *   stack                 ,
+    stack_error_t stack_init_dump(stack_t *   stack,
                                   int       (*print)(FILE *, void *),
-                                  size_t      line                  ,
-                                  const char *dump_file_name        ,
-                                  const char *initialized_file      ,
-                                  const char *variable_name         ,
-                                  const char *function_name         ) {
+                                  size_t      line,
+                                  const char *dump_file_name,
+                                  const char *initialized_file,
+                                  const char *variable_name,
+                                  const char *function_name) {
         if(dump_file_name == NULL)
             dump_file_name = DEFAULT_DUMP_FILE_NAME;
 
@@ -530,8 +529,8 @@ stack_error_t reallocate_data(stack_t *stack, size_t new_capacity) {
 //=============================================================================================================
 #ifdef HASH_PROTECTION
     stack_error_t stack_update_hash(stack_t *stack) {
-        stack_error_t hash_state = stack_count_hash(stack                 ,
-                                                    &stack->data_hash     ,
+        stack_error_t hash_state = stack_count_hash(stack,
+                                                    &stack->data_hash,
                                                     &stack->structure_hash);
         if(hash_state != STACK_SUCCESS)
             return hash_state;
@@ -547,21 +546,21 @@ stack_error_t reallocate_data(stack_t *stack, size_t new_capacity) {
         return hash;
     }
 
-    stack_error_t stack_count_hash(stack_t *stack         ,
-                                   size_t * data_hash     ,
+    stack_error_t stack_count_hash(stack_t *stack,
+                                   size_t * data_hash,
                                    size_t * structure_hash) {
         if(stack == NULL)
             return STACK_NULL;
 
-        *data_hash = hash_function(stack->data          ,
+        *data_hash = hash_function(stack->data,
                                    (char *)stack->data +
                                    stack->capacity *
-                                   stack->element_size  );
+                                   stack->element_size);
 
         if(stack->data == NULL)
             return STACK_NULL_DATA;
 
-        *structure_hash = hash_function(&stack->data             ,
+        *structure_hash = hash_function(&stack->data,
                                         &stack->init_capacity + 1);
         return STACK_SUCCESS;
     }
@@ -570,8 +569,8 @@ stack_error_t reallocate_data(stack_t *stack, size_t new_capacity) {
         size_t data_hash      = 0,
                structure_hash = 0;
 
-        stack_error_t hash_state = stack_count_hash(stack          ,
-                                                    &data_hash     ,
+        stack_error_t hash_state = stack_count_hash(stack,
+                                                    &data_hash,
                                                     &structure_hash);
         if(hash_state != STACK_SUCCESS)
             return hash_state;
@@ -592,21 +591,21 @@ stack_error_t reallocate_data(stack_t *stack, size_t new_capacity) {
         if(stack == NULL)
             return STACK_NULL;
 
-        stack->canary_left  = (size_t)stack ^ LEFT_HEX_SPEECH ;
-        stack->canary_right = (size_t)stack ^ RIGHT_HEX_SPEECH;
+        stack->canary_left  = (uint64_t)stack ^ LEFT_HEX_SPEECH ;
+        stack->canary_right = (uint64_t)stack ^ RIGHT_HEX_SPEECH;
 
         if(stack->data == NULL)
             return STACK_NULL_DATA;
 
-        stack->data_canary_left  = (size_t *)((char *)stack->data -
+        stack->data_canary_left  = (uint64_t *)((char *)stack->data -
                                               sizeof(stack->canary_left));
 
-        stack->data_canary_right = (size_t *)((char *)stack->data +
+        stack->data_canary_right = (uint64_t *)((char *)stack->data +
                                               stack->actual_data_size -
                                               2 * sizeof(stack->canary_left));
 
-        *stack->data_canary_left  = (size_t)stack->data ^ LEFT_HEX_SPEECH ;
-        *stack->data_canary_right = (size_t)stack->data ^ RIGHT_HEX_SPEECH;
+        *stack->data_canary_left  = (uint64_t)stack->data ^ LEFT_HEX_SPEECH ;
+        *stack->data_canary_right = (uint64_t)stack->data ^ RIGHT_HEX_SPEECH;
         return STACK_SUCCESS;
     }
 
@@ -616,17 +615,17 @@ stack_error_t reallocate_data(stack_t *stack, size_t new_capacity) {
         stack->actual_data_size = data_size +
                                   2 * canary_size +
                                   (canary_size - data_size % canary_size) %
-                                  canary_size                              ;
+                                  canary_size;
         return STACK_SUCCESS;
     }
 
     stack_error_t canary_verify(stack_t *stack) {
-        if(stack->canary_left  != ((size_t)stack ^ LEFT_HEX_SPEECH ) ||
-           stack->canary_right != ((size_t)stack ^ RIGHT_HEX_SPEECH)   )
+        if(stack->canary_left  != ((uint64_t)stack ^ LEFT_HEX_SPEECH ) ||
+           stack->canary_right != ((uint64_t)stack ^ RIGHT_HEX_SPEECH)   )
             return STACK_MEMORY_ATTACK;
 
-        if(*stack->data_canary_left  != ((size_t)stack->data ^ LEFT_HEX_SPEECH ) ||
-           *stack->data_canary_right != ((size_t)stack->data ^ RIGHT_HEX_SPEECH)   )
+        if(*stack->data_canary_left  != ((uint64_t)stack->data ^ LEFT_HEX_SPEECH ) ||
+           *stack->data_canary_right != ((uint64_t)stack->data ^ RIGHT_HEX_SPEECH)   )
             return STACK_MEMORY_ATTACK;
 
         return STACK_SUCCESS;
@@ -655,7 +654,7 @@ stack_error_t reallocate_data(stack_t *stack, size_t new_capacity) {
             return align_state;
 
         void *new_memory_cell = _recalloc(stack->data_canary_left,
-                                          old_actual_size        ,
+                                          old_actual_size,
                                           stack->actual_data_size, 1);
         if(new_memory_cell == NULL)
             return STACK_MEMORY_ERROR;
@@ -680,11 +679,11 @@ stack_error_t reallocate_data(stack_t *stack, size_t new_capacity) {
         return STACK_SUCCESS;
     }
 
-    stack_error_t data_reallocate_no_canary(stack_t *stack       ,
+    stack_error_t data_reallocate_no_canary(stack_t *stack,
                                             size_t   new_capacity) {
-        void *new_memory_cell = _recalloc(stack->data        ,
-                                          stack->capacity    ,
-                                          new_capacity       ,
+        void *new_memory_cell = _recalloc(stack->data,
+                                          stack->capacity,
+                                          new_capacity,
                                           stack->element_size);
 
         if(new_memory_cell == NULL && new_capacity != 0)
@@ -699,29 +698,4 @@ stack_error_t reallocate_data(stack_t *stack, size_t new_capacity) {
         return STACK_SUCCESS;
     }
 #endif//CANARY PROTECTION MODE FUNCTIONS DEFINITIONS
-/*sanjai zapilil za dve chashko riza
-1win
-winline
-1xbet
-betboom
-litenergi*/
-
-
-/*stack_error_t data_reallocate_canary(stack_t *stack) {
-        size_t old_actual_size = stack->actual_data_size;
-        stack_error_t align_state = align_size(stack);
-        if(old_actual_size == stack->actual_data_size)
-            return STACK_SUCCESS;
-
-        if(align_state != STACK_SUCCESS)
-            return align_state;
-
-        void *new_memory_cell = _recalloc(stack->data_canary_left,
-                                          old_actual_size        ,
-                                          stack->actual_data_size, 1);
-        if(new_memory_cell == NULL)
-            return STACK_MEMORY_ERROR;
-
-        stack->data = (char *)new_memory_cell + sizeof(stack->canary_left);
-        return STACK_SUCCESS;
-    }*/
+//sanjai zapilil za dve chashko riza

@@ -17,7 +17,7 @@ int pchar(FILE *file, void *elem) {
 int main(void) {
     stack_t st = {};
     stack_error_t err = STACK_SUCCESS;
-    if(err = stack_init(&st, 1, sizeof(char) DUMP_INIT(st, pchar, NULL))) {
+    if(err = stack_init(DUMP_INIT(st, pchar, NULL) &st, 1, sizeof(char))) {
         printf("err = %d\n", err);
         return EXIT_FAILURE;
     }
