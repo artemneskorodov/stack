@@ -1,43 +1,69 @@
 #include "stack.h"
 #include <stdlib.h>
 #include <string.h>
+#include <stdint.h>
 
 #ifndef NDEBUG
 int print_func(FILE *file, void *elem);
 int print_func(FILE *file, void *elem) {
-    return fprintf(file, "%lf", *(double *)elem);
-}
-
-int pchar(FILE *file, void *elem) {
-    return fputc(*(char *)elem, file);
+    return fprintf(file, "%llx", *(uint64_t *)elem);
 }
 
 #endif
 
 int main(void) {
-    stack_t st = {};
-    stack_error_t err = STACK_SUCCESS;
-    if(err = stack_init(DUMP_INIT(st, pchar, NULL) &st, 1, sizeof(char))) {
-        printf("err = %d\n", err);
-        return EXIT_FAILURE;
+    stack_t *stack = stack_init(DUMP_INIT("stack.log", stack, print_func) 4, sizeof(double));
+
+    uint64_t arr[64] = {};
+    for(size_t i = 0; i < 64; i++) {
+        arr[i] = (uint64_t)i;
+        stack_error_t err = stack_push(&stack, arr + i);
+        if(err != STACK_SUCCESS) {
+            printf("err = %d\n", err);
+            stack_destroy(&stack);
+            return 0;
+        }
+        printf("push %llu\n", i);
     }
 
-    char data[] = "abcdefghijklmnoprst12345";
-    for(size_t i = 0; i < strlen(data) - 3; i++) {
-        if(err = stack_push(&st, data + i)) {
+    for(size_t i = 0; i < 61; i++) {
+        uint64_t x = 0;
+        stack_error_t err = stack_pop(&stack, &x);
+        if(err != STACK_SUCCESS) {
             printf("err = %d\n", err);
-            return EXIT_FAILURE;
+            stack_destroy(&stack);
+            return 0;
         }
+        printf("pop %llu, elem = %llu\n", i, x);
     }
-    *((char *)st.data) = 1;
-    for(size_t i = 0; i < strlen(data); i++) {
-        char c = 0;
-        if(err = stack_pop(&st, &c)) {
+    for(size_t i = 0; i < 64; i++) {
+        arr[i] = (uint64_t)i;
+        stack_error_t err = stack_push(&stack, arr + i);
+        if(err != STACK_SUCCESS) {
             printf("err = %d\n", err);
-            return EXIT_FAILURE;
+            stack_destroy(&stack);
+            return 0;
         }
-        printf("got %c\n", c);
+        printf("push %llu\n", i);
     }
-    stack_destroy(&st);
+    for(size_t i = 0; i < 67; i++) {
+        uint64_t x = 0;
+        stack_error_t err = stack_pop(&stack, &x);
+        if(err != STACK_SUCCESS) {
+            printf("err = %d\n", err);
+            stack_destroy(&stack);
+            return 0;
+        }
+        printf("pop %llu, elem = %llu\n", i, x);
+    }
+
+    printf("end\n");
+
+    for(size_t i = 0; i < 200 / 8; i++) {
+        printf("stack[0x%llx] = 0x%llx\n", (uint64_t *)stack + i, *((uint64_t *)stack + i));
+    }
+
+    stack_destroy(&stack);
+    return 0;
 }
 

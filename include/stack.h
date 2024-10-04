@@ -2,59 +2,24 @@
 #define STACK_H
 
 #include <stdio.h>
-#include <stdint.h>
 
-#define CANARY_PROTECTION
-#define HASH_PROTECTION
-#define WRITE_DUMP
+#define STACK_HASH_PROTECTION
+#define STACK_CANARY_PROTECTION
+#define STACK_WRITE_DUMP
 
-#ifdef CANARY_PROTECTION
-#define STACK_CANARY_ON(...) __VA_ARGS__
+#ifdef STACK_WRITE_DUMP
+    #define STACK_WRITE_DUMP_ON(...) __VA_ARGS__
+    #define DUMP_INIT(__dump_filename, __var, __print)\
+        __dump_filename,                              \
+        __FILE_NAME__,                                \
+        #__var,                                       \
+        __PRETTY_FUNCTION__,                          \
+        __LINE__,                                     \
+        __print,
 #else
-#define STACK_CANARY_ON(...)
+    #define STACK_WRITE_DUMP_ON(...)
+    #define DUMP_INIT(...)
 #endif
-
-#ifdef HASH_PROTECTION
-#define STACK_HASH_ON(...) __VA_ARGS__
-#else
-#define STACK_HASH_ON(...)
-#endif
-
-#ifdef WRITE_DUMP
-#define DUMP_INIT(__var_name, __print_function, __dump_file_name) __FILE__,        \
-                                                                  __LINE__,        \
-                                                                  #__var_name,     \
-                                                                  __FUNCTION__,    \
-                                                                  __print_function,\
-                                                                  __dump_file_name,
-
-#define STACK_WRITE_DUMP_ON(...) __VA_ARGS__
-#else
-#define DUMP_INIT(__var_name, __print_function, __dump_file_name)
-#define STACK_WRITE_DUMP_ON(...)
-#endif
-
-struct stack_t {
-        STACK_CANARY_ON(uint64_t    canary_left           );
-          STACK_HASH_ON(size_t      structure_hash        );
-          STACK_HASH_ON(size_t      data_hash             );
-        STACK_CANARY_ON(uint64_t *  data_canary_left      );
-        STACK_CANARY_ON(uint64_t *  data_canary_right     );
-        STACK_CANARY_ON(size_t      actual_data_size      );
-    STACK_WRITE_DUMP_ON(const char *initialized_file      );
-    STACK_WRITE_DUMP_ON(const char *variable_name         );
-    STACK_WRITE_DUMP_ON(size_t      line                  );
-    STACK_WRITE_DUMP_ON(const char *initialized_func      );
-    STACK_WRITE_DUMP_ON(const char *dump_file_name        );
-    STACK_WRITE_DUMP_ON(FILE *      dump_file             );
-    STACK_WRITE_DUMP_ON(int       (*print)(FILE *, void *));
-                        void *      data                   ;
-                        size_t      size                   ;
-                        size_t      element_size           ;
-                        size_t      capacity               ;
-                        size_t      init_capacity          ;
-        STACK_CANARY_ON(uint64_t    canary_right          );
-};
 
 enum stack_error_t {
     STACK_SUCCESS          = 0 ,
@@ -68,21 +33,23 @@ enum stack_error_t {
     STACK_INCORRECT_SIZE   = 8 ,
     STACK_MEMORY_ATTACK    = 9 ,
     STACK_INVALID_CAPACITY = 10,
+    STACK_INVALID_INPUT    = 11,
+    STACK_INVALID_OUTPUT   = 12,
 };
 
-stack_error_t stack_init(STACK_WRITE_DUMP_ON(const char *initialized_file,
-                                             size_t      line,
-                                             const char *variable_name,
-                                             const char *function_name,
-                                             int       (*print)(FILE *,void *),
-                                             const char *dump_file_name,)
-                         stack_t *   stack,
-                         size_t      init_capacity,
-                         size_t      element_size);
-stack_error_t stack_push   (stack_t *stack,
-                            void *   elem);
-stack_error_t stack_pop    (stack_t *stack,
-                            void *   output);
-stack_error_t stack_destroy(stack_t *stack);
+struct stack_t;
+
+stack_t *stack_init(STACK_WRITE_DUMP_ON(const char *dump_filename,
+                                        const char *initialized_file,
+                                        const char *initialized_varname,
+                                        const char *initialized_function,
+                                        size_t      initialized_line,
+                                        int       (*print_func)(FILE *, void *),)
+                    size_t capacity,
+                    size_t element_size);
+
+stack_error_t stack_push(stack_t **stack, void *element);
+stack_error_t stack_pop(stack_t **stack, void *output);
+stack_error_t stack_destroy(stack_t **stack);
 
 #endif

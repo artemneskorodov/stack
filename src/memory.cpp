@@ -3,6 +3,8 @@
 #include <string.h>
 #include <stdarg.h>
 #include "memory.h"
+#include "colors.h"
+#include "custom_assert.h"
 
 enum memory_operation_t {
     MEMORY_ALLOCATION  ,
@@ -27,17 +29,16 @@ void *_recalloc(void * memory_cell,
                 size_t old_size,
                 size_t new_size,
                 size_t element_size) {
-    void *new_memory_cell = realloc(memory_cell            ,
+    void *new_memory_cell = realloc(memory_cell,
                                     new_size * element_size);
+
     MEMORY_LOG(MEMORY_REALLOCATION, memory_cell, old_size, new_memory_cell, new_size);
     if(new_memory_cell == NULL)
         return NULL;
-
     if(new_size > old_size)
         memset((char *)new_memory_cell + old_size * element_size,
                0,
                (new_size - old_size) * element_size);
-
     return new_memory_cell;
 }
 
@@ -58,12 +59,12 @@ void _free(void *memory_cell) {
         if(log_file == NULL) {
             log_file = fopen(LOG_FILE_NAME, "wb");
             if(log_file == NULL) {
-                printf("Error opening memory dump file.\n");
+                color_printf(RED_TEXT, BOLD_TEXT, DEFAULT_BACKGROUND,
+                "Error opening memory dump file.\n");
                 return ;
             }
             MEMORY_LOG(MEMORY_LOG_OPEN, NULL);
         }
-
         va_list args;
         va_start(args, operation);
 
@@ -138,6 +139,7 @@ void _free(void *memory_cell) {
             }
         }
         va_end(args);
+        fflush(log_file);
     }
 #endif
 
